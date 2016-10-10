@@ -1,16 +1,30 @@
-//count number of students
-//10 students per page
 var list = document.getElementsByClassName("student-item cf");
 
-// <div class="student-search">
-//           <input placeholder="Search for students...">
-//           <button>Search</button>
-// </div>
-
-makeButtons();
+var perPage = 10;//items per page
+makeButtons(); 
 searchBar();
 
-function searchBar(){
+//show first ten elements when page loads
+ $(document).ready(function(){
+	
+	var low = 0;
+	var high = 10;
+	$(list).each(function(){
+		$(this).addClass('show');
+	});
+	for(var i=0;i<list.length;i++){
+		if(i < low || i >= high){
+			list[i].style.display = "none";
+			
+		}
+		else{
+			list[i].style.display = "block";
+			
+		}
+	}
+ });
+//make search bar
+ function searchBar(){
 
 	var div = document.createElement('div');
 	div.classList.add('student-search');
@@ -18,79 +32,105 @@ function searchBar(){
 	input.placeholder = "Search for students...";
 	var button = document.createElement('button');
 	button.innerHTML = "Search";
-	
-	button.addEventListener("click", function(){
-		searchList();
-	});
-
+	button.addEventListener('click', searchList);
 	div.appendChild(input);
 	div.appendChild(button);
 	document.querySelector(".page-header").appendChild(div);
 
 }
-
+//search when search button is clicked
 function searchList(){
-	var string = document.querySelector('div.student-search input').value;
-	var names = document.querySelectorAll('div.student-details h3');
+	var name = $('input').val();
+	//if text from input matches name in list show item
+	//otherwise hide item
 	var count = 0;
-	var newList = [];
-	for(i=0;i<names.length;i++){
-		var test = names[i].innerHTML;
-		if(names[i].innerHTML.indexOf(string) >= 0){
-			//newList.push(list[i]);
-			list[i].style.display = "block";
-			count+=1;
-			
-		}
-		else{
-			list[i].style.display = "none";
+	//TODO: make search non-case sensitive indexOf()
+	//		search for email also
+	$("div.student-details h3").each(function(){
+			var check = $(this).text();
+				if(check.indexOf(name) >=0 ){
+					$(this).parent().parent().addClass("show");
+					count += 1;
+				}
+				else{
+					$(this).parent().parent().removeClass("show");
+				}
+	});	
+	createPagination(count);
+
+	buttonClick();
+	showHide();
+}
+//create necessary number of pages
+function createPagination(count){
+	//create number of buttons for how many results are returned
+	$('.pagination').remove();
+	var pages = Math.ceil(count/perPage);
+	var diva = document.createElement('div');
+	diva.classList.add("pagination");
+	var buttonList = document.createElement('ul');
+	if(count>perPage){
+	$('.page').append($(diva) );
+		for(var i=1; i<=pages; i++){
+			var li = document.createElement("li");
+			var a = document.createElement("a");
+			a.text = i;
+			if(i<=1){
+				a.classList.add("active");
+			}
+			buttonList.appendChild(li).appendChild(a);
+			diva.appendChild(buttonList);
 		}
 	}
-	deleteButtons();
-	searchButtons(count);
 }
 
-function searchButtons(number){
-	var count = 1;
-	var diva = document.createElement('div');
-	diva.classList.add("pagination")
-	var buttonList = document.createElement('ul');
-		
-	//students.appendChild(div);
-	$('.page').append($(diva) );
-	for(i=0;i<number; i+=10){
-		var li = document.createElement("li");
-		var a = document.createElement("a");
-		a.text=count;
-		if(i<1){
-			a.classList.add("active");
+//event listener for pagination
+function buttonClick(){
+	$('div.pagination li').children().each(function(){
+		this.addEventListener("click", showHide);
+	});
+}
+//show items based on current page
+function showHide(){
+	var page = $(this).text(); //get number from anchor 
+	if(page === ""){ //check if button was clicked or initial search
+		page = 1;
+	}
+	else{
+		$('div.pagination a').removeClass('active'); 
+		$(this).addClass('active'); //set current anchor to active
+	}
+	
+	var show = page * perPage;
+	var low = show - perPage;
+	var count = 0;
+	$('ul.student-list li').each(function(){ //loop over elements and set to hide or show
+		if($(this).hasClass('show')){
+			count++;
+			if(count>low && count<=show){
+				$(this).css('display', 'block');
+			}
+			else{
+				$(this).css('display', 'none');
+			}
 		}
-		buttonList.appendChild(li).appendChild(a);
-		diva.appendChild(buttonList);
-		
-		a.addEventListener("click", function(e){
-			e.preventDefault();
-			makeActive(this);
-		});
-
-		count+=1;
-	}	
-}
-
-function deleteButtons(){
-	$('.pagination').remove();
+		else{
+			$(this).css('display', 'none');
+		} 
+	});
 }
 
 function makeButtons(){
 	//make buttons for number of students
 	var count = 1;
+	var pages = list.length;
 	var diva = document.createElement('div');
-	diva.classList.add("pagination")
+	diva.classList.add("pagination");
 	var buttonList = document.createElement('ul');
 		
 	//students.appendChild(div);
 	$('.page').append($(diva) );
-	for(i=0;i<list.length; i+=10){
+	for(var i=0;i<pages; i+=10){
 		var li = document.createElement("li");
 		var a = document.createElement("a");
 		a.text=count;
@@ -99,50 +139,11 @@ function makeButtons(){
 		}
 		buttonList.appendChild(li).appendChild(a);
 		diva.appendChild(buttonList);
-		
-		a.addEventListener("click", function(e){
-			e.preventDefault();
-			makeActive(this);
-		});
 
 		count+=1;	
 
 	}
+	buttonClick();
 }
 
- $(document).ready(function(){
-	var num = this.classList;
-	var low = 0;
-	var high = 10;
-	console.log(num);
-	for(i=0;i<list.length;i++){
-		if(i < low || i >= high){
-			list[i].style.display = "none";
-		}
-		else{
-			list[i].style.display = "block";
-		}
-	}
- });
-
-function makeActive(anchor){
-    //when btn is clicked make certain elements active
-	//hide other elements
-	var num = anchor.innerHTML;	
-
-	$('.active').removeClass();
-	$(anchor).addClass("active");
-	
-	var low = num*10 - 10;
-	var high = num*10;
-	console.log(num);
-	for(i=0;i<list.length;i++){
-		if(i < low || i >= high){
-			list[i].style.display = "none";
-		}
-		else{
-			list[i].style.display = "block";
-		}
-	}
- }
-
+$('button').on('click', searchList);

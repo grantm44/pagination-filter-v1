@@ -41,19 +41,21 @@ searchBar();
 //search when search button is clicked
 function searchList(){
 	var name = $('input').val();
+	name = name.toLowerCase();
 	//if text from input matches name in list show item
 	//otherwise hide item
 	var count = 0;
-	//TODO: make search non-case sensitive indexOf()
-	//		search for email also
-	$("div.student-details h3").each(function(){
-			var check = $(this).text();
-				if(check.indexOf(name) >=0 ){
-					$(this).parent().parent().addClass("show");
+	$("div.student-details").each(function(){
+			var check = $(this).find('h3').text();
+			check = check.toLowerCase();
+			var email = $(this).find('span.email').text();
+			email = email.toLowerCase();
+				if(check.indexOf(name) >=0 || email.indexOf(name) >= 0){
+					$(this).parent().addClass("show");
 					count += 1;
 				}
 				else{
-					$(this).parent().parent().removeClass("show");
+					$(this).parent().removeClass("show");
 				}
 	});	
 	createPagination(count);
